@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GappleMC - Admin Panel</title>
+    <link href="https://fonts.googleapis.com/css2?family=Minecraft&family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #e74c3c;
+            --primary-dark: #c0392b;
+            --secondary: #f39c12;
+            --dark: #1a1a1a;
+            --darker: #111;
+            --light: #ecf0f1;
+            --success: #2ecc71;
+            --error: #e74c3c;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--darker);
+            color: var(--light);
+            margin: 0;
+            padding: 0;
+        }
+        
+        .tab-container {
+            display: flex;
+            background: var(--dark);
+            padding: 0;
+            margin: 0;
+        }
+        
+        .tab {
+            padding: 15px 20px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+        
+        .tab.active {
+            border-bottom: 3px solid var(--primary);
+            background: rgba(231, 76, 60, 0.1);
+        }
+        
+        .tab-content {
+            display: none;
+            padding: 20px;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        /* Player Management Styles */
+        .player-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .player-card {
+            background: rgba(26, 26, 26, 0.7);
+            border-radius: 5px;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .player-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        
+        .player-info {
+            flex-grow: 1;
+        }
+        
+        .player-actions {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .action-btn {
+            background: var(--dark);
+            border: none;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .action-btn:hover {
+            opacity: 0.8;
+        }
+        
+        .kick-btn {
+            background: var(--primary);
+        }
+        
+        .ban-btn {
+            background: var(--error);
+        }
+        
+        .tp-btn {
+            background: var(--secondary);
+        }
+        
+        /* Console Styles */
+        .console-container {
+            background: #000;
+            height: 400px;
+            overflow-y: auto;
+            padding: 15px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        
+        .console-input {
+            display: flex;
+            margin-top: 10px;
+        }
+        
+        #command-input {
+            flex-grow: 1;
+            background: #111;
+            border: 1px solid #333;
+            color: var(--light);
+            padding: 8px;
+            font-family: monospace;
+        }
+        
+        #send-command {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            margin-left: 10px;
+            cursor: pointer;
+        }
+        
+        .log-message {
+            margin-bottom: 5px;
+            line-height: 1.4;
+        }
+        
+        .log-command {
+            color: var(--secondary);
+        }
+        
+        .log-response {
+            color: #ccc;
+        }
+    </style>
+</head>
+<body>
+    <div class="tab-container">
+        <div class="tab active" onclick="openTab('player-management')">
+            <i class="fas fa-users"></i> Player Management
+        </div>
+        <div class="tab" onclick="openTab('server-console')">
+            <i class="fas fa-terminal"></i> Server Console
+        </div>
+    </div>
+    
+    <!-- Player Management Tab -->
+    <div id="player-management" class="tab-content active">
+        <h2><i class="fas fa-users"></i> Online Players</h2>
+        <div class="player-list" id="online-players">
+            <!-- Players will be loaded here -->
+            <div class="player-card">
+                <img src="https://mc-heads.net/avatar/Notch/40" class="player-avatar">
+                <div class="player-info">
+                    <div class="player-name">Notch</div>
+                    <div class="player-ping">Ping: 42ms</div>
+                </div>
+                <div class="player-actions">
+                    <button class="action-btn tp-btn" title="Teleport to player">
+                        <i class="fas fa-map-marker-alt"></i>
+                    </button>
+                    <button class="action-btn kick-btn" title="Kick player">
+                        <i class="fas fa-user-slash"></i>
+                    </button>
+                    <button class="action-btn ban-btn" title="Ban player">
+                        <i class="fas fa-ban"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <h2 style="margin-top: 30px;"><i class="fas fa-database"></i> Player Database</h2>
+        <input type="text" id="player-search" placeholder="Search players...">
+        <div class="player-list" id="all-players">
+            <!-- All players will be loaded here -->
+        </div>
+    </div>
+    
+    <!-- Server Console Tab -->
+    <div id="server-console" class="tab-content">
+        <h2><i class="fas fa-terminal"></i> Server Console</h2>
+        <div class="console-container" id="console-output">
+            <div class="log-message log-response">Console initialized. Type "help" for available commands.</div>
+        </div>
+        <div class="console-input">
+            <input type="text" id="command-input" placeholder="Enter command..." autocomplete="off">
+            <button id="send-command">Send</button>
+        </div>
+    </div>
+
+    <script>
+        // Tab management
+        function openTab(tabId) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Deactivate all tabs
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Activate selected tab
+            document.getElementById(tabId).classList.add('active');
+            event.currentTarget.classList.add('active');
+        }
+        
+        // Player management functions
+        function loadOnlinePlayers() {
+            // In a real implementation, this would fetch from your server API
+            const onlinePlayers = [
+                { name: "Notch", ping: 42 },
+                { name: "Herobrine", ping: 128 },
+                { name: "Steve", ping: 56 }
+            ];
+            
+            const container = document.getElementById('online-players');
+            container.innerHTML = '';
+            
+            onlinePlayers.forEach(player => {
+                const playerCard = document.createElement('div');
+                playerCard.className = 'player-card';
+                playerCard.innerHTML = `
+                    <img src="https://mc-heads.net/avatar/${player.name}/40" class="player-avatar">
+                    <div class="player-info">
+                        <div class="player-name">${player.name}</div>
+                        <div class="player-ping">Ping: ${player.ping}ms</div>
+                    </div>
+                    <div class="player-actions">
+                        <button class="action-btn tp-btn" title="Teleport to player" onclick="teleportToPlayer('${player.name}')">
+                            <i class="fas fa-map-marker-alt"></i>
+                        </button>
+                        <button class="action-btn kick-btn" title="Kick player" onclick="kickPlayer('${player.name}')">
+                            <i class="fas fa-user-slash"></i>
+                        </button>
+                        <button class="action-btn ban-btn" title="Ban player" onclick="banPlayer('${player.name}')">
+                            <i class="fas fa-ban"></i>
+                        </button>
+                    </div>
+                `;
+                container.appendChild(playerCard);
+            });
+        }
+        
+        // Player action functions
+        function teleportToPlayer(player) {
+            executeCommand(`tp ${player}`);
+        }
+        
+        function kickPlayer(player) {
+            if (confirm(`Kick ${player} from the server?`)) {
+                executeCommand(`kick ${player} Kicked by admin`);
+            }
+        }
+        
+        function banPlayer(player) {
+            if (confirm(`Permanently ban ${player}?`)) {
+                executeCommand(`ban ${player} Banned by admin`);
+            }
+        }
+        
+        // Console functions
+        function executeCommand(command) {
+            const consoleOutput = document.getElementById('console-output');
+            const logElement = document.createElement('div');
+            logElement.className = 'log-message log-command';
+            logElement.textContent = `> ${command}`;
+            consoleOutput.appendChild(logElement);
+            
+            // In a real implementation, this would send to your backend
+            setTimeout(() => {
+                const responseElement = document.createElement('div');
+                responseElement.className = 'log-message log-response';
+                responseElement.textContent = `Command executed: ${command}`;
+                consoleOutput.appendChild(responseElement);
+                consoleOutput.scrollTop = consoleOutput.scrollHeight;
+                
+                // Refresh player list if command affects players
+                if (command.startsWith('kick') || command.startsWith('ban') || command.startsWith('pardon')) {
+                    loadOnlinePlayers();
+                }
+            }, 500);
+        }
+        
+        // Event listeners
+        document.getElementById('send-command').addEventListener('click', () => {
+            const commandInput = document.getElementById('command-input');
+            const command = commandInput.value.trim();
+            if (command) {
+                executeCommand(command);
+                commandInput.value = '';
+            }
+        });
+        
+        document.getElementById('command-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                document.getElementById('send-command').click();
+            }
+        });
+        
+        // Initial load
+        loadOnlinePlayers();
+        
+        // Simulate periodic updates
+        setInterval(() => {
+            // In a real implementation, this would check for player changes
+            if (Math.random() > 0.7) {
+                loadOnlinePlayers();
+            }
+        }, 10000);
+    </script>
+</body>
+</html>
