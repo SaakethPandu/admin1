@@ -119,6 +119,22 @@
             margin-right: 10px;
         }
         
+        .player-actions {
+            margin-left: auto;
+            display: none; /* Hidden by default */
+        }
+        
+        .admin-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 3px;
+            padding: 3px 8px;
+            margin-left: 5px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+        
         .mod-list {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -153,9 +169,87 @@
             margin-bottom: 15px;
             font-size: 1.5rem;
         }
+        
+        /* Login Modal */
+        .login-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .login-box {
+            background: var(--dark);
+            padding: 30px;
+            border-radius: 8px;
+            width: 300px;
+            text-align: center;
+        }
+        
+        .login-box h2 {
+            color: var(--primary);
+            margin-bottom: 20px;
+        }
+        
+        .login-box input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            background: #111;
+            border: 1px solid #333;
+            color: white;
+        }
+        
+        .login-box button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+        }
+        
+        .login-error {
+            color: var(--primary);
+            margin-top: 10px;
+            display: none;
+        }
+        
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .admin-logout {
+            background: var(--primary-dark);
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
     </style>
 </head>
 <body>
+    <!-- Login Modal (shown first) -->
+    <div id="login-modal" class="login-modal">
+        <div class="login-box">
+            <h2><i class="fas fa-lock"></i> Admin Login</h2>
+            <input type="password" id="admin-password" placeholder="Enter admin password">
+            <button onclick="checkPassword()">Login</button>
+            <p id="login-error" class="login-error">Incorrect password</p>
+        </div>
+    </div>
+    
     <header>
         <div class="container">
             <div class="logo">Gapple<span>MC</span> Status</div>
@@ -197,7 +291,12 @@
             
             <!-- Player List Column -->
             <div class="server-card">
-                <h2 class="section-title">Online Players</h2>
+                <div class="admin-header">
+                    <h2 class="section-title">Online Players</h2>
+                    <button id="admin-logout" class="admin-logout" style="display: none;" onclick="logout()">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </button>
+                </div>
                 <div id="players-container">
                     <p id="no-players" style="text-align: center;">Loading player data...</p>
                     <!-- Players will be loaded here -->
@@ -215,6 +314,9 @@
             "GriefPrevention", "CoreProtect"
         ];
         
+        // Admin password (IN PRODUCTION, USE A SECURE BACKEND INSTEAD)
+        const ADMIN_PASSWORD = "GappleMC@BAB"; // CHANGE THIS TO A SECURE PASSWORD
+        
         // DOM elements
         const statusIndicator = document.getElementById('status-indicator');
         const statusText = document.getElementById('status-text');
@@ -224,6 +326,15 @@
         const noPlayers = document.getElementById('no-players');
         const modList = document.getElementById('mod-list');
         const uptime = document.getElementById('uptime');
+        const loginModal = document.getElementById('login-modal');
+        const adminLogoutBtn = document.getElementById('admin-logout');
+        
+        // Check if user is already logged in
+        if (localStorage.getItem('adminLoggedIn') === 'true') {
+            loginModal.style.display = 'none';
+            adminLogoutBtn.style.display = 'block';
+            enableAdminFeatures();
+        }
         
         // Format uptime
         function formatUptime(seconds) {
@@ -237,6 +348,44 @@
             if (mins > 0) result += `${mins}m`;
             
             return result || "Just started";
+        }
+        
+        // Check password
+        function checkPassword() {
+            const password = document.getElementById('admin-password').value;
+            const errorElement = document.getElementById('login-error');
+            
+            if (password === ADMIN_PASSWORD) {
+                localStorage.setItem('adminLoggedIn', 'true');
+                loginModal.style.display = 'none';
+                adminLogoutBtn.style.display = 'block';
+                enableAdminFeatures();
+            } else {
+                errorElement.style.display = 'block';
+            }
+        }
+        
+        // Logout function
+        function logout() {
+            localStorage.removeItem('adminLoggedIn');
+            location.reload();
+        }
+        
+        // Enable admin features
+        function enableAdminFeatures() {
+            // Show admin buttons on player cards
+            document.querySelectorAll('.player-actions').forEach(el => {
+                el.style.display = 'block';
+            });
+            
+            // Add admin commands to mod list
+            const adminMods = ["Kick Command", "Ban Command", "Teleport"];
+            adminMods.forEach(mod => {
+                const modItem = document.createElement('div');
+                modItem.className = 'mod-item';
+                modItem.innerHTML = `<i class="fas fa-shield-alt"></i> ${mod}`;
+                modList.appendChild(modItem);
+            });
         }
         
         // Update server status
@@ -278,7 +427,7 @@
             }
         }
         
-        // Update player list
+        // Update player list with admin actions
         function updatePlayerList(players) {
             playersContainer.innerHTML = "";
             
@@ -299,9 +448,32 @@
                          class="player-avatar" 
                          alt="${player}">
                     <span>${player}</span>
+                    <div class="player-actions" ${localStorage.getItem('adminLoggedIn') === 'true' ? 'style="display:block;"' : ''}>
+                        <button class="admin-btn" onclick="adminAction('kick', '${player}')">
+                            <i class="fas fa-user-slash"></i> Kick
+                        </button>
+                        <button class="admin-btn" onclick="adminAction('ban', '${player}')">
+                            <i class="fas fa-ban"></i> Ban
+                        </button>
+                    </div>
                 `;
                 playersContainer.appendChild(playerCard);
             });
+        }
+        
+        // Admin action handler
+        function adminAction(action, player) {
+            if (!confirm(`Are you sure you want to ${action} ${player}?`)) return;
+            
+            // In a real implementation, this would send to your backend
+            alert(`[DEBUG] Would ${action} ${player}`);
+            console.log(`Admin action: ${action} ${player}`);
+            
+            // For demo purposes, we'll just show a message
+            const consoleOutput = document.createElement('div');
+            consoleOutput.className = 'log-message';
+            consoleOutput.textContent = `[ADMIN] ${action.toUpperCase()} ${player}`;
+            playersContainer.appendChild(consoleOutput);
         }
         
         // Initialize mod list
@@ -322,6 +494,13 @@
             
             // Auto-refresh every 30 seconds
             setInterval(updateServerStatus, 30000);
+            
+            // Handle Enter key in password field
+            document.getElementById('admin-password').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    checkPassword();
+                }
+            });
         };
     </script>
 </body>
