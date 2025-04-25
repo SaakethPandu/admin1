@@ -1,988 +1,436 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>BAB Minecraft Panel</title>
-    <link href="https://fonts.googleapis.com/css2?family=Minecraft&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BAB Network - Real-Time Panel</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #4CAF50;
-            --secondary: #2E7D32;
-            --dark: #121212;
-            --darker: #0A0A0A;
-            --light: #E0E0E0;
-            --red: #F44336;
-            --bedrock-blue: #5D8BF4;
-            --bedrock-dark-blue: #3A6BDB;
-        }
-        
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+            --primary: #4a00e0;
+            --secondary: #8e2de2;
+            --accent: #00d2ff;
+            --dark: #1a1a2e;
+            --light: #f8f9fa;
+            --online: #00ff00;
+            --offline: #ff0000;
         }
         
         body {
-            font-family: 'Minecraft', Arial, sans-serif;
-            background: var(--dark);
+            font-family: 'Montserrat', sans-serif;
+            background: linear-gradient(135deg, var(--dark), #16213e);
             color: var(--light);
+            margin: 0;
+            padding: 0;
             min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background-image: 
-                radial-gradient(circle at 25% 25%, rgba(46, 125, 50, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 75% 75%, rgba(76, 175, 80, 0.1) 0%, transparent 50%);
-            overflow-x: hidden;
         }
         
-        /* Loading Screen */
-        #loading-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: var(--darker);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            transition: opacity 0.5s ease;
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
         }
         
-        .loading-container {
-            width: 300px;
+        header {
             text-align: center;
-        }
-        
-        .loading-title {
-            font-size: 2rem;
-            color: var(--primary);
-            margin-bottom: 30px;
-            text-shadow: 0 0 10px rgba(76, 175, 80, 0.5);
-            animation: pulse 2s infinite;
-        }
-        
-        @keyframes pulse {
-            0% { opacity: 0.8; }
-            50% { opacity: 1; }
-            100% { opacity: 0.8; }
-        }
-        
-        .loading-bar {
-            width: 100%;
-            height: 20px;
-            background: rgba(50, 50, 50, 0.5);
-            border-radius: 10px;
-            overflow: hidden;
-            margin-bottom: 15px;
-            border: 1px solid rgba(76, 175, 80, 0.2);
-        }
-        
-        .loading-progress {
-            height: 100%;
-            width: 0%;
-            background: linear-gradient(90deg, var(--primary), var(--secondary));
-            border-radius: 10px;
-            transition: width 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .loading-progress::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(
-                90deg,
-                transparent,
-                rgba(255, 255, 255, 0.2),
-                transparent
-            );
-            animation: shimmer 1.5s infinite;
-        }
-        
-        @keyframes shimmer {
-            0% { transform: translateX(-100%); }
-            100% { transform: translateX(100%); }
-        }
-        
-        .loading-text {
-            font-size: 1rem;
-            color: var(--light);
-            text-align: center;
-            margin-top: 10px;
-        }
-        
-        /* Main Panel */
-        .panel {
-            width: 90%;
-            max-width: 900px;
-            background: rgba(30, 30, 30, 0.9);
-            backdrop-filter: blur(10px);
+            margin-bottom: 2rem;
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.3);
             border-radius: 15px;
-            overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-            border: 1px solid rgba(76, 175, 80, 0.2);
-            transform: translateY(20px) scale(0.98);
-            opacity: 0;
-            transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+            border: 1px solid var(--accent);
+            box-shadow: 0 0 20px rgba(0, 210, 255, 0.3);
         }
         
-        .panel-visible {
-            transform: translateY(0) scale(1);
-            opacity: 1;
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.5rem;
+            margin: 0;
+            background: linear-gradient(to right, var(--accent), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 0 10px rgba(74, 0, 224, 0.5);
+        }
+        
+        .server-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+        }
+        
+        .info-card {
+            background: rgba(26, 26, 46, 0.7);
+            border-radius: 10px;
+            padding: 1.5rem;
+            width: 30%;
+            text-align: center;
+            border: 1px solid var(--primary);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .info-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(74, 0, 224, 0.3);
+        }
+        
+        .info-card h3 {
+            color: var(--accent);
+            margin-top: 0;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .status-online {
+            background-color: var(--online);
+            box-shadow: 0 0 10px var(--online);
+        }
+        
+        .status-offline {
+            background-color: var(--offline);
+            box-shadow: 0 0 10px var(--offline);
+        }
+        
+        .player-panel {
+            background: rgba(26, 26, 46, 0.7);
+            border-radius: 15px;
+            padding: 2rem;
+            border: 1px solid var(--secondary);
+            box-shadow: 0 0 15px rgba(142, 45, 226, 0.2);
         }
         
         .panel-header {
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            padding: 20px;
-            text-align: center;
-            position: relative;
-        }
-        
-        .panel-title {
-            font-size: 2rem;
-            color: white;
-            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
-            letter-spacing: 2px;
-        }
-        
-        .panel-body {
-            padding: 25px;
-        }
-        
-        /* Login Form */
-        .login-form {
-            max-width: 400px;
-            margin: 0 auto;
-            padding: 20px;
-            background: rgba(40, 40, 40, 0.7);
-            border-radius: 10px;
-            border: 1px solid rgba(76, 175, 80, 0.3);
-        }
-        
-        .form-group {
-            margin-bottom: 15px;
-        }
-        
-        select, input {
-            width: 100%;
-            padding: 12px 15px;
-            background: rgba(50, 50, 50, 0.7);
-            border: 1px solid rgba(76, 175, 80, 0.3);
-            border-radius: 8px;
-            color: var(--light);
-            font-family: 'Minecraft', Arial, sans-serif;
-            font-size: 1rem;
-            transition: all 0.3s ease;
-        }
-        
-        select:focus, input:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.3);
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.2);
-        }
-        
-        .btn {
-            display: inline-block;
-            padding: 12px 25px;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-family: 'Minecraft', Arial, sans-serif;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-align: center;
-            width: 100%;
-            margin-top: 10px;
-            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.2);
-        }
-        
-        .btn:active {
-            transform: translateY(0);
-        }
-        
-        .btn::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(255,255,255,0.1);
-            transform: translateX(-100%);
-            transition: transform 0.3s ease;
-        }
-        
-        .btn:hover::after {
-            transform: translateX(0);
-        }
-        
-        .btn-logout {
-            background: linear-gradient(135deg, var(--red), #D32F2F);
-        }
-        
-        /* Server Status */
-        .server-status {
-            background: rgba(40, 40, 40, 0.7);
-            border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 20px;
-            border: 1px solid rgba(76, 175, 80, 0.3);
-        }
-        
-        .status-item {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 10px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            align-items: center;
+            margin-bottom: 1.5rem;
         }
         
-        .status-item:last-child {
-            border-bottom: none;
-            margin-bottom: 0;
-            padding-bottom: 0;
+        .panel-header h2 {
+            font-family: 'Orbitron', sans-serif;
+            color: var(--accent);
+            margin: 0;
         }
         
-        .status-label {
+        .player-count {
+            background: var(--primary);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
             font-weight: bold;
-            color: rgba(255, 255, 255, 0.8);
         }
         
-        .status-value {
-            color: var(--light);
-        }
-        
-        .online {
-            color: var(--primary);
-            text-shadow: 0 0 10px rgba(76, 175, 80, 0.5);
-            animation: pulse-opacity 2s infinite;
-        }
-        
-        .bedrock-online {
-            color: var(--bedrock-blue);
-            text-shadow: 0 0 10px rgba(93, 139, 244, 0.5);
-            animation: pulse-opacity 2s infinite;
-        }
-        
-        @keyframes pulse-opacity {
-            0% { opacity: 0.8; }
-            50% { opacity: 1; }
-            100% { opacity: 0.8; }
-        }
-        
-        .offline {
-            color: var(--red);
-        }
-        
-        /* Players List */
-        .players-list {
-            background: rgba(40, 40, 40, 0.7);
-            border-radius: 10px;
-            padding: 20px;
-            border: 1px solid rgba(76, 175, 80, 0.3);
-        }
-        
-        .players-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            flex-wrap: wrap;
-        }
-        
-        .players-title {
-            margin-bottom: 0;
-            font-size: 1.2rem;
-            color: var(--primary);
-            display: flex;
-            align-items: center;
-        }
-        
-        .players-title::before {
-            content: '';
-            display: inline-block;
-            width: 10px;
-            height: 10px;
-            background: var(--primary);
-            border-radius: 50%;
-            margin-right: 10px;
-            box-shadow: 0 0 10px var(--primary);
-        }
-        
-        .player-tabs {
-            display: flex;
-            gap: 5px;
-        }
-        
-        .player-tab {
-            padding: 5px 10px;
-            background: rgba(50, 50, 50, 0.5);
-            border: 1px solid rgba(76, 175, 80, 0.3);
-            border-radius: 5px;
-            color: var(--light);
-            cursor: pointer;
-            font-family: 'Minecraft', Arial, sans-serif;
-            transition: all 0.2s ease;
-        }
-        
-        .player-tab:hover {
-            background: rgba(76, 175, 80, 0.2);
-        }
-        
-        .player-tab.active {
-            background: var(--primary);
-            color: white;
-        }
-        
-        .player-grid {
+        .player-list {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-            gap: 10px;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
         }
         
         .player-card {
-            background: rgba(50, 50, 50, 0.5);
-            border-radius: 8px;
-            padding: 10px;
-            text-align: center;
-            transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
-            border: 1px solid rgba(76, 175, 80, 0.1);
-            position: relative;
-        }
-        
-        .player-card:hover {
-            transform: translateY(-3px);
-            background: rgba(76, 175, 80, 0.1);
-            border-color: rgba(76, 175, 80, 0.3);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-        }
-        
-        .player-bedrock {
-            border: 1px solid rgba(93, 139, 244, 0.3);
-        }
-        
-        .player-bedrock:hover {
-            background: rgba(93, 139, 244, 0.1);
-            border-color: rgba(93, 139, 244, 0.3);
-        }
-        
-        .player-bedrock::after {
-            content: 'BE';
-            position: absolute;
-            top: -5px;
-            right: -5px;
-            background: var(--bedrock-blue);
-            color: white;
-            font-size: 0.6rem;
-            padding: 2px 4px;
-            border-radius: 3px;
-            border: 1px solid var(--bedrock-dark-blue);
-        }
-        
-        .player-avatar {
-            width: 50px;
-            height: 50px;
-            margin: 0 auto 10px;
-            background: #333;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            overflow: hidden;
-            border: 2px solid var(--primary);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        
-        .player-bedrock .player-avatar {
-            border-color: var(--bedrock-blue);
-        }
-        
-        .player-card:hover .player-avatar {
-            transform: scale(1.1);
-            box-shadow: 0 0 15px rgba(76, 175, 80, 0.5);
-        }
-        
-        .player-bedrock:hover .player-avatar {
-            box-shadow: 0 0 15px rgba(93, 139, 244, 0.5);
-        }
-        
-        .player-avatar img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        
-        .player-name {
-            font-size: 0.9rem;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        
-        .player-time {
-            font-size: 0.7rem;
-            color: rgba(255, 255, 255, 0.6);
-            margin-top: 3px;
-        }
-        
-        /* Playtime Tracking Section */
-        .playtime-section {
-            background: rgba(40, 40, 40, 0.7);
+            background: linear-gradient(145deg, rgba(74, 0, 224, 0.2), rgba(142, 45, 226, 0.1));
             border-radius: 10px;
-            padding: 20px;
-            margin-top: 20px;
-            border: 1px solid rgba(76, 175, 80, 0.3);
-        }
-        
-        .playtime-header {
+            padding: 1rem;
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            margin-bottom: 15px;
+            border: 1px solid rgba(142, 45, 226, 0.3);
+            transition: all 0.3s;
+            animation: fadeIn 0.5s ease-out;
         }
         
-        .playtime-title {
-            font-size: 1.2rem;
-            color: var(--primary);
-        }
-        
-        .playtime-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        
-        .playtime-table th, .playtime-table td {
-            padding: 10px;
-            text-align: left;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .playtime-table th {
-            color: var(--primary);
-        }
-        
-        .playtime-platform {
-            font-size: 0.7rem;
-            color: var(--bedrock-blue);
-            background: rgba(93, 139, 244, 0.1);
-            padding: 2px 5px;
-            border-radius: 3px;
-            margin-left: 5px;
-        }
-        
-        /* Animations */
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
         
-        .fade-in {
-            animation: fadeIn 0.4s ease forwards;
+        .player-card.admin {
+            border: 1px solid rgba(255, 0, 0, 0.5);
+            background: linear-gradient(145deg, rgba(255, 0, 0, 0.1), rgba(255, 0, 0, 0.05));
         }
         
-        /* Error Message */
-        #login-error {
-            color: var(--red);
-            margin-top: 10px;
-            display: none;
-            transition: all 0.3s ease;
-            transform: scale(0.95);
+        .player-card:hover {
+            background: linear-gradient(145deg, rgba(74, 0, 224, 0.3), rgba(142, 45, 226, 0.2));
+            transform: translateY(-3px);
         }
         
-        #login-error.fade-in {
-            transform: scale(1);
+        .player-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 1rem;
+            background-size: cover;
+            border: 2px solid var(--accent);
         }
         
-        /* Responsive */
+        .player-avatar.admin {
+            border-color: #ff4d4d;
+        }
+        
+        .player-info {
+            flex-grow: 1;
+        }
+        
+        .player-username {
+            font-weight: 600;
+        }
+        
+        .player-ip {
+            font-size: 0.8rem;
+            color: #aaa;
+        }
+        
+        .admin-badge {
+            display: inline-block;
+            background: #ff4d4d;
+            color: white;
+            font-size: 0.7rem;
+            padding: 0.2rem 0.5rem;
+            border-radius: 10px;
+            margin-left: 0.5rem;
+            vertical-align: middle;
+        }
+        
+        .server-ip {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.2rem;
+            letter-spacing: 1px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            display: inline-block;
+            margin-top: 1rem;
+            border: 1px solid var(--accent);
+        }
+        
+        .copy-ip {
+            background: var(--accent);
+            color: var(--dark);
+            border: none;
+            padding: 0.3rem 0.7rem;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-left: 0.5rem;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        
+        .copy-ip:hover {
+            background: var(--secondary);
+            color: white;
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 1rem;
+            border-radius: 5px;
+            border-left: 4px solid var(--accent);
+            transform: translateX(120%);
+            transition: transform 0.3s;
+            z-index: 1000;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
         @media (max-width: 768px) {
-            .panel {
-                width: 95%;
-            }
-            
-            .players-header {
+            .server-info {
                 flex-direction: column;
-                align-items: flex-start;
-                gap: 10px;
             }
             
-            .player-grid {
-                grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-            }
-            
-            .playtime-table {
-                display: block;
-                overflow-x: auto;
+            .info-card {
+                width: 100%;
+                margin-bottom: 1rem;
             }
         }
     </style>
 </head>
 <body>
-    <!-- Loading Screen -->
-    <div id="loading-screen">
-        <div class="loading-container">
-            <div class="loading-title">BAB NETWORK</div>
-            <div class="loading-bar">
-                <div class="loading-progress" id="loading-bar"></div>
+    <div class="container">
+        <header>
+            <h1>BAB NETWORK</h1>
+            <div class="server-ip">
+                play.iitnetwork.fun
+                <button class="copy-ip" onclick="copyIp()">Copy</button>
             </div>
-            <div class="loading-text" id="loading-text">Initializing...</div>
+        </header>
+        
+        <div class="server-info">
+            <div class="info-card">
+                <h3>Server Status</h3>
+                <p><span id="status-indicator" class="status-indicator status-online"></span> <span id="server-status">Online</span></p>
+            </div>
+            <div class="info-card">
+                <h3>Players Online</h3>
+                <p><span id="online-count">0</span>/<span id="max-players">100</span></p>
+            </div>
+            <div class="info-card">
+                <h3>Server Version</h3>
+                <p id="server-version">1.20.1</p>
+            </div>
+        </div>
+        
+        <div class="player-panel">
+            <div class="panel-header">
+                <h2>Online Players</h2>
+                <div id="player-count" class="player-count">0 Players</div>
+            </div>
+            
+            <div id="player-list" class="player-list">
+                <!-- Player cards will be dynamically added here -->
+            </div>
         </div>
     </div>
     
-    <!-- Login Panel -->
-    <div class="panel" id="login-panel">
-        <div class="panel-header">
-            <h1 class="panel-title">BAB NETWORK</h1>
-        </div>
-        <div class="panel-body">
-            <div class="login-form">
-                <div class="form-group">
-                    <select id="username">
-                        <option value="">Select Admin</option>
-                        <option value="saaketh">Saaketh</option>
-                        <option value="abhinav">Abhinav</option>
-                        <option value="akhil">Akhil</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <input type="password" id="password" placeholder="Password">
-                </div>
-                <button class="btn" onclick="login()">Login</button>
-                <p id="login-error">Invalid credentials</p>
-            </div>
-        </div>
+    <div id="notification" class="notification">
+        <div id="notification-message"></div>
     </div>
     
-    <!-- Server Panel -->
-    <div class="panel" id="server-panel" style="display: none;">
-        <div class="panel-header">
-            <h1 class="panel-title">BAB SERVER PANEL</h1>
-        </div>
-        <div class="panel-body">
-            <div style="text-align: right; margin-bottom: 15px;">
-                <span style="opacity: 0.8;">Logged in as </span>
-                <strong id="logged-in-user"></strong>
-                <button class="btn btn-logout" onclick="logout()" style="width: auto; display: inline-block; margin-left: 10px; padding: 8px 15px;">Logout</button>
-            </div>
-            
-            <div class="server-status">
-                <div class="status-item">
-                    <span class="status-label">Server IP:</span>
-                    <span class="status-value">play.iitnetwork.fun</span>
-                </div>
-                <div class="status-item">
-                    <span class="status-label">Java Status:</span>
-                    <span class="status-value" id="java-status"><span class="offline">Loading...</span></span>
-                </div>
-                <div class="status-item">
-                    <span class="status-label">Bedrock Status:</span>
-                    <span class="status-value" id="bedrock-status"><span class="offline">Loading...</span></span>
-                </div>
-                <div class="status-item">
-                    <span class="status-label">Java Players:</span>
-                    <span class="status-value" id="java-player-count">0</span>
-                </div>
-                <div class="status-item">
-                    <span class="status-label">Bedrock Players:</span>
-                    <span class="status-value" id="bedrock-player-count">0</span>
-                </div>
-                <button class="btn" onclick="refreshData()" style="margin-top: 15px;">Refresh Data</button>
-            </div>
-            
-            <div class="players-list">
-                <div class="players-header">
-                    <h3 class="players-title">Online Players</h3>
-                    <div class="player-tabs">
-                        <button class="player-tab active" onclick="showPlayerTab('all')">All Players</button>
-                        <button class="player-tab" onclick="showPlayerTab('java')">Java</button>
-                        <button class="player-tab" onclick="showPlayerTab('bedrock')">Bedrock</button>
-                    </div>
-                </div>
-                <div class="player-grid" id="players-list">
-                    <div class="player-card">
-                        <div class="player-avatar">
-                            <img src="https://mc-heads.net/avatar/MHF_Question" alt="Player">
-                        </div>
-                        <div class="player-name">Loading...</div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="playtime-section">
-                <div class="playtime-header">
-                    <h3 class="playtime-title">Player Playtime</h3>
-                    <button class="btn" onclick="refreshPlaytime()" style="width: auto; padding: 8px 15px;">Refresh</button>
-                </div>
-                <table class="playtime-table">
-                    <thead>
-                        <tr>
-                            <th>Player</th>
-                            <th>Platform</th>
-                            <th>Session Time</th>
-                            <th>Total Time</th>
-                            <th>Last Seen</th>
-                        </tr>
-                    </thead>
-                    <tbody id="playtime-data">
-                        <tr>
-                            <td colspan="5" style="text-align: center;">Loading playtime data...</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
     <script>
-        // Player playtime tracking data
-        const playerPlaytime = {};
-        let playtimeUpdateInterval;
-        let currentPlayerTab = 'all';
+        // WebSocket connection
+        const ws = new WebSocket(`ws://${window.location.hostname}:3000`);
+        const playerList = document.getElementById('player-list');
+        const notification = document.getElementById('notification');
+        const notificationMessage = document.getElementById('notification-message');
         
-        // Loading animation
-        const loadingBar = document.getElementById('loading-bar');
-        const loadingText = document.getElementById('loading-text');
-        const loadingStages = [
-            { progress: 20, text: "Loading assets..." },
-            { progress: 45, text: "Connecting to services..." },
-            { progress: 70, text: "Authenticating..." },
-            { progress: 90, text: "Finalizing..." },
-            { progress: 100, text: "Ready!" }
-        ];
+        // State
+        let players = [];
+        let admins = ['Saaketh', 'Akhil', 'Abhinav'];
         
-        let currentStage = 0;
+        // WebSocket handlers
+        ws.onopen = () => {
+            console.log('Connected to WebSocket server');
+        };
         
-        function updateLoadingBar() {
-            if (currentStage < loadingStages.length) {
-                const stage = loadingStages[currentStage];
-                loadingBar.style.width = stage.progress + '%';
-                loadingText.textContent = stage.text;
-                currentStage++;
-                
-                // Speed up at the end
-                const speed = currentStage === loadingStages.length - 1 ? 300 : 800;
-                setTimeout(updateLoadingBar, speed);
-            } else {
-                // Loading complete
+        ws.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            
+            switch(data.type) {
+                case 'init':
+                    handleInitialData(data.data);
+                    break;
+                case 'playerJoin':
+                    addPlayer(data.data);
+                    showNotification(`${data.data.username} joined the server`);
+                    break;
+                case 'playerLeave':
+                    removePlayer(data.data);
+                    showNotification(`${data.data} left the server`);
+                    break;
+                case 'statusUpdate':
+                    updateServerStatus(data.data);
+                    break;
+            }
+        };
+        
+        ws.onclose = () => {
+            console.log('Disconnected from WebSocket server');
+            showNotification('Disconnected from server. Attempting to reconnect...');
+            setTimeout(() => {
+                window.location.reload();
+            }, 5000);
+        };
+        
+        // Data handlers
+        function handleInitialData(data) {
+            document.getElementById('server-status').textContent = data.status;
+            document.getElementById('online-count').textContent = data.players.length;
+            document.getElementById('max-players').textContent = data.maxPlayers;
+            document.getElementById('server-version').textContent = data.version;
+            document.getElementById('player-count').textContent = `${data.players.length} Players`;
+            
+            // Clear existing players
+            playerList.innerHTML = '';
+            
+            // Add all players
+            data.players.forEach(player => {
+                addPlayer(player, false);
+            });
+        }
+        
+        function addPlayer(player, updateCount = true) {
+            // Check if player already exists
+            if (players.some(p => p.username === player.username)) {
+                return;
+            }
+            
+            players.push(player);
+            
+            if (updateCount) {
+                document.getElementById('online-count').textContent = players.length;
+                document.getElementById('player-count').textContent = `${players.length} Players`;
+            }
+            
+            const isAdmin = admins.includes(player.username);
+            
+            const playerCard = document.createElement('div');
+            playerCard.className = `player-card ${isAdmin ? 'admin' : ''}`;
+            playerCard.id = `player-${player.username}`;
+            playerCard.innerHTML = `
+                <div class="player-avatar ${isAdmin ? 'admin' : ''}" 
+                     style="background-image: url('https://mc-heads.net/avatar/${player.username}')"></div>
+                <div class="player-info">
+                    <div class="player-username">
+                        ${player.username}
+                        ${isAdmin ? '<span class="admin-badge">ADMIN</span>' : ''}
+                    </div>
+                    <div class="player-ip">${player.ip}</div>
+                </div>
+            `;
+            
+            playerList.appendChild(playerCard);
+        }
+        
+        function removePlayer(username) {
+            players = players.filter(player => player.username !== username);
+            
+            document.getElementById('online-count').textContent = players.length;
+            document.getElementById('player-count').textContent = `${players.length} Players`;
+            
+            const playerElement = document.getElementById(`player-${username}`);
+            if (playerElement) {
+                playerElement.style.animation = 'fadeIn 0.5s ease-out reverse';
                 setTimeout(() => {
-                    document.getElementById('loading-screen').style.opacity = '0';
-                    setTimeout(() => {
-                        document.getElementById('loading-screen').style.display = 'none';
-                        document.getElementById('login-panel').classList.add('panel-visible');
-                    }, 500);
+                    playerElement.remove();
                 }, 500);
             }
         }
         
-        // Start loading animation
-        setTimeout(updateLoadingBar, 500);
+        function updateServerStatus(status) {
+            const indicator = document.getElementById('status-indicator');
+            const statusElement = document.getElementById('server-status');
+            
+            statusElement.textContent = status === 'online' ? 'Online' : 'Offline';
+            
+            if (status === 'online') {
+                indicator.className = 'status-indicator status-online';
+            } else {
+                indicator.className = 'status-indicator status-offline';
+            }
+        }
         
-        // Admin credentials
-        const ADMINS = {
-            "saaketh": "saaketh123",
-            "abhinav": "abhinav456",
-            "akhil": "akhil789"
-        };
-
-        // Server IP for status checks
-        const SERVER_IP = "play.iitnetwork.fun";
-
-        // Check server status every 30 seconds
-        let refreshInterval;
-
-        function login() {
-            const username = document.getElementById("username").value;
-            const password = document.getElementById("password").value;
-            const errorElement = document.getElementById("login-error");
-
-            if (ADMINS[username] === password) {
-                // Successful login
-                document.getElementById("login-panel").style.display = "none";
-                document.getElementById("server-panel").style.display = "block";
-                document.getElementById("logged-in-user").textContent = username;
-                
-                // Animate panel entrance
-                setTimeout(() => {
-                    document.getElementById("server-panel").classList.add("panel-visible");
-                }, 10);
-                
-                // Start auto-refresh
-                refreshData();
-                refreshInterval = setInterval(refreshData, 30000);
-                
-                // Start playtime tracking
-                startPlaytimeTracking();
-                
-                // Hide error if shown
-                errorElement.style.display = "none";
-            } else {
-                // Failed login
-                errorElement.style.display = "block";
-                errorElement.classList.add("fade-in");
-            }
+        // UI Functions
+        function copyIp() {
+            navigator.clipboard.writeText('play.iitnetwork.fun')
+                .then(() => showNotification('Server IP copied to clipboard!'))
+                .catch(err => showNotification('Failed to copy IP'));
         }
-
-        function logout() {
-            clearInterval(refreshInterval);
-            clearInterval(playtimeUpdateInterval);
-            document.getElementById("server-panel").classList.remove("panel-visible");
-            setTimeout(() => {
-                document.getElementById("server-panel").style.display = "none";
-                document.getElementById("login-panel").style.display = "block";
-                document.getElementById("login-panel").classList.add("panel-visible");
-                document.getElementById("username").value = "";
-                document.getElementById("password").value = "";
-                document.getElementById("login-error").style.display = "none";
-            }, 500);
-        }
-
-        // Format time as HH:MM:SS
-        function formatTime(seconds) {
-            const hours = Math.floor(seconds / 3600);
-            const minutes = Math.floor((seconds % 3600) / 60);
-            const secs = seconds % 60;
-            
-            return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-        }
-
-        // Start tracking player playtime
-        function startPlaytimeTracking() {
-            // Clear any existing interval
-            clearInterval(playtimeUpdateInterval);
-            
-            // Update playtime every second
-            playtimeUpdateInterval = setInterval(() => {
-                // Get current online players from the players list
-                const playerElements = document.querySelectorAll('.player-card .player-name');
-                
-                playerElements.forEach(element => {
-                    const playerName = element.textContent.trim();
-                    if (playerName && playerName !== "Loading..." && playerName !== "No players online" && playerName !== "Server offline") {
-                        const playerCard = element.closest('.player-card');
-                        const isBedrock = playerCard.classList.contains('player-bedrock');
-                        
-                        if (!playerPlaytime[playerName]) {
-                            playerPlaytime[playerName] = {
-                                sessionStart: new Date(),
-                                totalSeconds: 0,
-                                sessionSeconds: 0,
-                                lastSeen: new Date(),
-                                platform: isBedrock ? 'bedrock' : 'java'
-                            };
-                        }
-                        
-                        // Update times
-                        playerPlaytime[playerName].totalSeconds++;
-                        playerPlaytime[playerName].sessionSeconds++;
-                        playerPlaytime[playerName].lastSeen = new Date();
-                        
-                        // Update the display if this player is shown in the player grid
-                        const timeElement = element.nextElementSibling;
-                        if (timeElement && timeElement.classList.contains('player-time')) {
-                            timeElement.textContent = `Online: ${formatTime(playerPlaytime[playerName].sessionSeconds)}`;
-                        }
-                    }
-                });
-                
-                // Update the playtime table
-                updatePlaytimeTable();
-            }, 1000);
-        }
-
-        // Update the playtime table
-        function updatePlaytimeTable() {
-            const tableBody = document.getElementById('playtime-data');
-            
-            // Sort players by total playtime (descending)
-            const sortedPlayers = Object.entries(playerPlaytime).sort((a, b) => b[1].totalSeconds - a[1].totalSeconds);
-            
-            if (sortedPlayers.length === 0) {
-                tableBody.innerHTML = `
-                    <tr>
-                        <td colspan="5" style="text-align: center;">No playtime data available</td>
-                    </tr>
-                `;
-                return;
-            }
-            
-            tableBody.innerHTML = sortedPlayers.map(([player, data]) => `
-                <tr class="fade-in">
-                    <td>${player}</td>
-                    <td><span class="playtime-platform" style="color: ${data.platform === 'bedrock' ? 'var(--bedrock-blue)' : 'var(--primary)'}">
-                        ${data.platform === 'bedrock' ? 'Bedrock' : 'Java'}
-                    </span></td>
-                    <td>${formatTime(data.sessionSeconds)}</td>
-                    <td>${formatTime(data.totalSeconds)}</td>
-                    <td>${data.lastSeen.toLocaleTimeString()}</td>
-                </tr>
-            `).join('');
-        }
-
-        // Refresh playtime data manually
-        function refreshPlaytime() {
-            const btn = document.querySelector('.playtime-section .btn');
-            btn.disabled = true;
-            btn.textContent = 'Refreshing...';
-            
-            updatePlaytimeTable();
+        
+        function showNotification(message) {
+            notificationMessage.textContent = message;
+            notification.classList.add('show');
             
             setTimeout(() => {
-                btn.disabled = false;
-                btn.textContent = 'Refresh';
-            }, 1000);
+                notification.classList.remove('show');
+            }, 3000);
         }
-
-        // Show specific player tab
-        function showPlayerTab(tab) {
-            currentPlayerTab = tab;
-            const tabs = document.querySelectorAll('.player-tab');
-            tabs.forEach(t => t.classList.remove('active'));
-            event.target.classList.add('active');
-            
-            const players = document.querySelectorAll('.player-card');
-            players.forEach(player => {
-                const isBedrock = player.classList.contains('player-bedrock');
-                const shouldShow = 
-                    tab === 'all' || 
-                    (tab === 'java' && !isBedrock) || 
-                    (tab === 'bedrock' && isBedrock);
-                
-                player.style.display = shouldShow ? 'block' : 'none';
-            });
-        }
-
-        async function refreshData() {
-            try {
-                const refreshBtn = document.querySelector('.server-status .btn');
-                refreshBtn.disabled = true;
-                refreshBtn.textContent = 'Refreshing...';
-                
-                // Fetch Java server status
-                const javaResponse = await fetch(`https://api.mcsrvstat.us/2/${SERVER_IP}`);
-                const javaData = await javaResponse.json();
-                
-                // Fetch Bedrock server status
-                const bedrockResponse = await fetch(`https://api.mcsrvstat.us/bedrock/2/${SERVER_IP}`);
-                const bedrockData = await bedrockResponse.json();
-                
-                // Update Java status
-                updateServerStatus('java', javaData);
-                
-                // Update Bedrock status
-                updateServerStatus('bedrock', bedrockData);
-                
-                // Combine and display players
-                displayPlayers(javaData, bedrockData);
-                
-            } catch (error) {
-                console.error("Error fetching server data:", error);
-                document.getElementById("java-status").innerHTML = '<span class="offline">Error</span>';
-                document.getElementById("bedrock-status").innerHTML = '<span class="offline">Error</span>';
-            } finally {
-                const refreshBtn = document.querySelector('.server-status .btn');
-                if (refreshBtn) {
-                    setTimeout(() => {
-                        refreshBtn.disabled = false;
-                        refreshBtn.textContent = 'Refresh Data';
-                    }, 1000);
-                }
-            }
-        }
-
-        function updateServerStatus(serverType, data) {
-            const statusElement = document.getElementById(`${serverType}-status`);
-            const countElement = document.getElementById(`${serverType}-player-count`);
-            
-            if (data.online) {
-                const onlineClass = serverType === 'bedrock' ? 'bedrock-online' : 'online';
-                statusElement.innerHTML = `<span class="${onlineClass}">Online</span>`;
-                countElement.textContent = data.players?.online || 0;
-            } else {
-                statusElement.innerHTML = '<span class="offline">Offline</span>';
-                countElement.textContent = "0";
-            }
-        }
-
-        function displayPlayers(javaData, bedrockData) {
-            const playersListElement = document.getElementById('players-list');
-            
-            let javaPlayers = [];
-            let bedrockPlayers = [];
-            
-            if (javaData.online && javaData.players?.list) {
-                javaPlayers = javaData.players.list.map(player => ({
-                    name: player,
-                    type: 'java',
-                    avatar: `https://mc-heads.net/avatar/${player}`
-                }));
-            }
-            
-            if (bedrockData.online && bedrockData.players?.list) {
-                bedrockPlayers = bedrockData.players.list.map(player => ({
-                    name: player,
-                    type: 'bedrock',
-                    avatar: `https://mc-heads.net/avatar/${player}`
-                }));
-            }
-            
-            const allPlayers = [...javaPlayers, ...bedrockPlayers];
-            
-            if (allPlayers.length > 0) {
-                playersListElement.innerHTML = allPlayers.map(player => {
-                    const playtime = playerPlaytime[player.name] || {
-                        sessionSeconds: 0,
-                        totalSeconds: 0,
-                        lastSeen: new Date(),
-                        platform: player.type
-                    };
-                    
-                    return `
-                        <div class="player-card fade-in ${player.type === 'bedrock' ? 'player-bedrock' : ''}" 
-                             style="display: ${currentPlayerTab === 'all' || currentPlayerTab === player.type ? 'block' : 'none'}">
-                            <div class="player-avatar">
-                                <img src="${player.avatar}" alt="${player.name}">
-                            </div>
-                            <div class="player-name">${player.name}</div>
-                            <div class="player-time">Online: ${formatTime(playtime.sessionSeconds)}</div>
-                        </div>
-                    `;
-                }).join("");
-            } else {
-                playersListElement.innerHTML = `
-                    <div class="player-card">
-                        <div class="player-avatar">
-                            <img src="https://mc-heads.net/avatar/MHF_Question" alt="No players">
-                        </div>
-                        <div class="player-name">No players online</div>
-                    </div>
-                `;
-            }
-        }
-
-        // Allow login on Enter key
-        document.getElementById("password").addEventListener("keyup", function(event) {
-            if (event.key === "Enter") {
-                login();
-            }
-        });
     </script>
 </body>
 </html>
